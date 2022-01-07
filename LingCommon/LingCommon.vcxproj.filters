@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Util">
+      <UniqueIdentifier>{2893fbdd-904f-4c48-ae5a-1f9c66593187}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Exception">
+      <UniqueIdentifier>{d3aa5f6d-3bdf-49bd-8215-02571482c550}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Util\ExtStd">
+      <UniqueIdentifier>{11171e99-b30d-4454-a8fa-87e34dcf2341}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Exception">
+      <UniqueIdentifier>{b8a39ecb-9744-4f30-8149-379f873a61af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Util">
+      <UniqueIdentifier>{b0d487fc-3902-4543-94e0-b27dd4ec4dee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Util\IO">
+      <UniqueIdentifier>{9a6d28bf-3d05-4b66-8eb0-a60bf2bac0fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Util\ExtStd">
+      <UniqueIdentifier>{132e2c3e-f78b-4e7e-b30d-004a4ebce8d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Util\DSA">
+      <UniqueIdentifier>{cb8284a7-1379-4539-9ead-d06000b9b1fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DSA">
+      <UniqueIdentifier>{137a926b-474d-4659-a9b6-cbba95bb1518}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Util\IO">
+      <UniqueIdentifier>{04a3cacf-8853-4578-b2e0-0f6d3fd02b16}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="__LingCommonShared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.h">
+      <Filter>Header Files\Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="File.h">
+      <Filter>Header Files\Util\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="FileStream.h">
+      <Filter>Header Files\Util\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCommon.h">
+      <Filter>Header Files\Util\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="__UtilShared.h">
+      <Filter>Header Files\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtStd.h">
+      <Filter>Header Files\Util\ExtStd</Filter>
+    </ClInclude>
+    <ClInclude Include="UTFStringAffair.h">
+      <Filter>Header Files\Util\DSA</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Exception.cpp">
+      <Filter>Source Files\Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="File.cpp">
+      <Filter>Source Files\Util\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="FileStream.cpp">
+      <Filter>Source Files\Util\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCommon.cpp">
+      <Filter>Source Files\Util\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="UTFStringAffair.cpp">
+      <Filter>Source Files\DSA</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

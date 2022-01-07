@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Startup">
+      <UniqueIdentifier>{77f7211b-4d88-4466-af9a-f66fc4d86563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Runtime">
+      <UniqueIdentifier>{8cb34927-4703-438c-b2f7-10a695d3e49d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Startup">
+      <UniqueIdentifier>{28fcf7cc-f130-4a93-a3ad-e972d427c5c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Runtime">
+      <UniqueIdentifier>{b468c391-7cad-4517-bcab-4b47c73e0c0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\API">
+      <UniqueIdentifier>{b5ea0f89-d74d-42d5-a9ac-80c08c883ae1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="__LingVMShared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="__StartupShared.h">
+      <Filter>Header Files\Startup</Filter>
+    </ClInclude>
+    <ClInclude Include="RuntimeCommon.h">
+      <Filter>Header Files\Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="__RuntimeShared.h">
+      <Filter>Header Files\Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="VM.h">
+      <Filter>Header Files\Runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="LingVMBackendCompilerInterface.h">
+      <Filter>Header Files\API</Filter>
+    </ClInclude>
+    <ClInclude Include="StartupInfoCollector.h">
+      <Filter>Header Files\Startup</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StartupInfoCollector.cpp">
+      <Filter>Source Files\Startup</Filter>
+    </ClCompile>
+    <ClCompile Include="RuntimeCommon.cpp">
+      <Filter>Source Files\Runtime</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

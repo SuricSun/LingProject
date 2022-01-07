@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Compile">
+      <UniqueIdentifier>{dd91648d-68dd-4ef9-a0f0-ac70b38af89f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Compile\Lexical">
+      <UniqueIdentifier>{898d7725-c166-449d-acb9-5ff543710a84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Compile\Grammatical">
+      <UniqueIdentifier>{0a7b9659-bfcb-4def-a5de-2d05f969e1bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Compile\CompileWrapper">
+      <UniqueIdentifier>{427675fe-99c6-44aa-a25a-5e86aeb0082d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compile">
+      <UniqueIdentifier>{be410bca-354b-4aa5-91c9-ce53206f5b03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compile\Lexical">
+      <UniqueIdentifier>{5f16cbec-1932-412e-85c5-0bb3ecc6304d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compile\Grammatical">
+      <UniqueIdentifier>{dcc64a8a-55c9-4271-848b-5f543516a217}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Compile\CompileWrapper">
+      <UniqueIdentifier>{bd733bc5-ea2d-4704-8d1c-5bb2228b19f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\APIImpl">
+      <UniqueIdentifier>{71998df3-891e-4fd8-bd2c-703989608546}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\APIImpl">
+      <UniqueIdentifier>{83668647-7949-4a25-8a0e-35a7ab940111}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="__LingLanShared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="__CompileShared.h">
+      <Filter>Header Files\Compile</Filter>
+    </ClInclude>
+    <ClInclude Include="CompileCommon.h">
+      <Filter>Header Files\Compile</Filter>
+    </ClInclude>
+    <ClInclude Include="Lexer.h">
+      <Filter>Header Files\Compile\Lexical</Filter>
+    </ClInclude>
+    <ClInclude Include="LALRParser.h">
+      <Filter>Header Files\Compile\Grammatical</Filter>
+    </ClInclude>
+    <ClInclude Include="CompilePack.h">
+      <Filter>Header Files\Compile\CompileWrapper</Filter>
+    </ClInclude>
+    <ClInclude Include="Test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LingVMBackendCompilerImpl.h">
+      <Filter>Header Files\APIImpl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CompileCommon.cpp">
+      <Filter>Source Files\Compile</Filter>
+    </ClCompile>
+    <ClCompile Include="Lexer.cpp">
+      <Filter>Source Files\Compile\Lexical</Filter>
+    </ClCompile>
+    <ClCompile Include="LALRParser.cpp">
+      <Filter>Source Files\Compile\Grammatical</Filter>
+    </ClCompile>
+    <ClCompile Include="AugGrammar.cpp">
+      <Filter>Source Files\Compile\Grammatical</Filter>
+    </ClCompile>
+    <ClCompile Include="LALRParsingTable.cpp">
+      <Filter>Source Files\Compile\Grammatical</Filter>
+    </ClCompile>
+    <ClCompile Include="CompilePack.cpp">
+      <Filter>Source Files\Compile\CompileWrapper</Filter>
+    </ClCompile>
+    <ClCompile Include="Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LingVMBackendCompilerImpl.cpp">
+      <Filter>Source Files\APIImpl</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
