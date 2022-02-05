@@ -7,54 +7,25 @@ LingLan::Compile::Lexical::Lexer::Lexer() {
 
 }
 
-void LingLan::Compile::Lexical::Lexer::init(u8string* p_stringAllTokenDef) {
+void LingLan::Compile::Lexical::Lexer::init(LanguageRulesFile* p_rulesfFile) {
 
 	this->clear();
 
-	match_results<u8string::const_iterator> result = {};
-	u8string::const_iterator cbegin_curTokenDef = {};
-	u8string::const_iterator cend_curTokenDef = {};
+	map<u8string*, u8string*, DereferenceLess<u8string*>>* p_terminalMap = addr(p_rulesfFile->terminalMap);
+	vector<u8string*>* p_terminalVec = addr(p_rulesfFile->terminalVec);
 
-	cbegin_curTokenDef = p_stringAllTokenDef->cbegin() + 1;
-	cend_curTokenDef = cbegin_curTokenDef + p_stringAllTokenDef->at(0);
-	while (true) {
-		if (regex_search(cbegin_curTokenDef, cend_curTokenDef, result, LanguageRulesFile::TokenNameRegex) == false) {
-			throw new LanguageRulesFileException(u8"No Desc");
-		}
-		//得到结果，检查匹配的起始点是否是起点
-		if (result[0].first != cbegin_curTokenDef) {
-			throw new LanguageRulesFileException(u8"No Desc");
-		}
-		//检查end是不是等号
-		if ((*result[0].second) != '=') {
-			throw new LanguageRulesFileException(u8"No Desc");
-		}
-		//后面全是Regex文本了
-		//p_tmp = new SymbolTerminal();
-		//p_tmp->name.assign(result[0].first, result[0].second);
-		//p_tmp->regexStr.assign(result[0].second + 1, cend_curTokenDef);
-		//p_tmp->regexPattern.assign(result[0].second + 1, cend_curTokenDef);
-		this->allSymbolTerminal.emplace_back(new SymbolTerminal());
-		this->allSymbolTerminal.back()->name.assign(result[0].first, result[0].second);
-		this->allSymbolTerminal.back()->regexStr.assign(result[0].second + 1, cend_curTokenDef);
-		this->allSymbolTerminal.back()->regexPattern.assign(result[0].second + 1, cend_curTokenDef);
-		//不重复才能加入
-		//if (this->nameToSymbolTerminalMap.find(&p_tmp->name) != this->nameToSymbolTerminalMap.cend()) {
-		//	delete p_tmp;
-		//	throw new LanguageRulesFileException(u8"Duplicated Def");
-		//}
-		if (this->nameToSymbolTerminalMap.emplace(addr(this->allSymbolTerminal.back()->name), this->allSymbolTerminal.back()).second == false) {
-			del(this->allSymbolTerminal.back());
-			this->allSymbolTerminal.pop_back();
-			throw new LanguageRulesFileException(u8"Duplicated Def");
-		}
-		//更新迭代器
-		cbegin_curTokenDef = cend_curTokenDef;
-		if (cbegin_curTokenDef == p_stringAllTokenDef->cend()) {
-			break;
-		}
-		cend_curTokenDef = cbegin_curTokenDef + (*cbegin_curTokenDef) + 1;
-		cbegin_curTokenDef++;
+	SymbolTerminal* p_tmp;
+	//循环vec
+	u64 length = p_terminalVec->size();
+	for (u64 i = 0; i < length; i++) {
+		//创建SymbolTerminal，加入对应的map
+		p_tmp = new SymbolTerminal();
+		p_tmp->name.assign(deref(p_terminalVec->at(i)));
+		p_tmp->regexStr.assign(deref(p_terminalMap->find(p_terminalVec->at(i))->second));
+		p_tmp->regexPattern.assign((char*)p_tmp->regexStr.c_str());
+		//加入
+		this->allSymbolTerminal.emplace_back(p_tmp);
+		this->nameToSymbolTerminalMap.emplace(addr(p_tmp->name), p_tmp);
 	}
 }
 
@@ -83,7 +54,7 @@ vector<Token*>* LingLan::Compile::Lexical::Lexer::lexicalAnalyze(const char8_t* 
 				if (m[0].first == p_curStart) {
 					//match到了
 					//只有非delimiter才能加入
-					if (p_curSymbolTerminal->name != LanguageRulesFile::DelimiterTokenName) {
+					if (p_curSymbolTerminal->name != LanguageRulesFile::DelimiterSymbolName) {
 						//加入
 						Token* p_tmp = new Token();
 						p_tmp->p_symbolTerminal = p_curSymbolTerminal;

@@ -32,7 +32,7 @@ namespace LingLan {
 				AugGrammar();
 				AugGrammar(const AugGrammar& ag);
 				void operator=(const AugGrammar& ag);
-				void init(u8string* p_prodDef, Lexical::Lexer* p_lexer);
+				void init(LanguageRulesFile* p_rulesFile, Lexical::Lexer* p_lexer);
 				void clear();
 				void setShallowClear(bool yesOrNo);
 				~AugGrammar();

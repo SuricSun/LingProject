@@ -34,8 +34,7 @@ u32 LingLan::Compile::CompileWrapper::SerializableCompilePack::getProductionSize
 	//objSize: 4byte
 	//SymbolNonTerminal* p_head: 8byte
 	//vector<Symbol*> body: 2byte [size], [size] * 8byte
-	//vector<bool> reserveInAstTree: 2byte [size], [size] * 1byte
-	return 16 + p_prod->body.size() * 8 + p_prod->reserveInAstTree.size();
+	return 14 + p_prod->body.size() * 8;
 }
 
 u32 LingLan::Compile::CompileWrapper::SerializableCompilePack::getLALRActionSize(LALRAction* p_act) {
@@ -115,14 +114,6 @@ void LingLan::Compile::CompileWrapper::SerializableCompilePack::writeProduction(
 			p_fout->write(&ptr, 8);
 		}
 	}
-	//vector<bool> reserveInAstTree: 2byte [size], [size] * 1byte
-	size = p_prod->reserveInAstTree.size();
-	p_fout->write(&size, 2);
-	u8 boolVal = 0;
-	for (u32 i = 0; i < size; i++) {
-		boolVal = p_prod->reserveInAstTree.at(i);
-		p_fout->write(addr(boolVal), 1);
-	}
 }
 
 void LingLan::Compile::CompileWrapper::SerializableCompilePack::writeLALRAction(LALRAction* p_act, map<Production*, u64>* p_prodReaddress, Util::IO::FileOutputStream* p_fout) {
@@ -151,16 +142,16 @@ void LingLan::Compile::CompileWrapper::SerializableCompilePack::initFromLanFile(
 	lrf.setFilePath(p_lanFile);
 	lrf.format();
 
-	this->lexer.init(lrf.getFormattedSymbolTerminalDef());
-	this->augGrammar.init(lrf.getFormattedProductionDef(), addr(this->lexer));
+	this->lexer.init(addr(lrf));
+	this->augGrammar.init(addr(lrf), addr(this->lexer));
 	this->parsingTable.init(addr(this->augGrammar));
 	this->parser.init(addr(this->parsingTable));
 }
 
 void LingLan::Compile::CompileWrapper::SerializableCompilePack::initFromLanFile(LanguageRulesFile* p_lanFile) {
 
-	this->lexer.init(p_lanFile->getFormattedSymbolTerminalDef());
-	this->augGrammar.init(p_lanFile->getFormattedProductionDef(), addr(this->lexer));
+	this->lexer.init(p_lanFile);
+	this->augGrammar.init(p_lanFile, addr(this->lexer));
 	this->parsingTable.init(addr(this->augGrammar));
 	this->parser.init(addr(this->parsingTable));
 }
@@ -481,15 +472,6 @@ void LingLan::Compile::CompileWrapper::DeserializedCompilePack::deserialize(WCHA
 			} else {
 				this->prod.at(i).body.emplace_back(cit_ter->second);
 			}
-		}
-		//vector<bool> reserveInAstTree: size * 1byte
-		u8 boolVal = 0;
-		fin.read(&vecSize, 2);
-		bytesRead += 2;
-		for (; vecSize > 0; vecSize--) {
-			fin.read(&boolVal, 1);
-			bytesRead += 1;
-			this->prod.at(i).reserveInAstTree.emplace_back(boolVal);
 		}
 	}
 	// * act

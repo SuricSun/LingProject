@@ -23,10 +23,11 @@ void Test() {
 		#else
 		info.addVMArgument(addr(name), new u8string(u8"C:\\Work\\Solutions\\VS Solutions\\LingProject\\x64\\Release"));
 		info.addVMArgument(addr(name), new u8string(u8"va=l=ue"));
-		//info.scanBackendCompiler();
+		info.scanBackendCompiler();
 		//cout << (char*)name.c_str() << "  =  " << (char*)info.vmArguments.find(addr(name))->second->c_str();
 		LingVM::Startup::BackendCompilerWrapper w;
 		w.tryGetBackendCompilerFromDLL(u8"C:\\Work\\Solutions\\VS Solutions\\LingProject\\x64\\Release\\LingLan.dll");
+		cout << "\nfunc offset is : " << (u64)((u64)(w.getLingVMBackendCompiler) - (u64)(LoadLibraryW((LPCWSTR)u"LingLan.dll")));
 		cout << "\ncompile returns " << (int)w.p_backendCompiler->compile(nullptr, 187);
 		u8string* p = w.p_backendCompiler->getFileExtension();
 		cout << "\n" << (char*)p->c_str();

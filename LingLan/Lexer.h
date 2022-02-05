@@ -24,7 +24,7 @@ namespace LingLan {
 				/// </summary>
 				SymbolEndMarker endMarker;
 				/// <summary>
-				/// 求重和求交集的副产品
+				/// 主要是给AugGrammar使用的
 				/// </summary>
 				map<u8string*, SymbolTerminal*, Util::ExtStd::DereferenceLess<u8string*>> nameToSymbolTerminalMap;
 				bool shallowClear = false;
@@ -32,7 +32,7 @@ namespace LingLan {
 				Lexer();
 				Lexer(const Lexer& lxr);
 				void operator=(const Lexer& lxr);
-				void init(u8string* p_string);
+				void init(LanguageRulesFile* p_rulesfFile);
 				vector<Token*>* lexicalAnalyze(const char8_t* p_inputProgramStr, u64 sizeInByte);
 				vector<Token*>* lexicalAnalyze(const u8string* p_inputProgramStr);
 				void clear();
