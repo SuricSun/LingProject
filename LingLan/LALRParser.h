@@ -38,6 +38,8 @@ namespace LingLan {
 				~AugGrammar();
 			};
 
+			//前向声明
+			class LALRState;
 			class LALRItem {
 			public:
 				Production* p_prod = nullptr;
@@ -47,17 +49,17 @@ namespace LingLan {
 				/// </summary>
 				set<SymbolTerminal*> sc_lookAhead;
 				/// <summary>
-				/// scndCpnt的扩散情况
+				/// 扩散到哪些kernel item
 				/// </summary>
-				set<LALRItem*> sc_spreadProbe;
-				/// <summary>
-				/// 扩散的child
-				/// </summary>
-				set<LALRItem*> spreadFatherSet;
+				set<LALRItem*> spreadFather;
 				/// <summary>
 				/// 默认为假，别瞎改
 				/// </summary>
 				bool isKernelItem = false;
+				/// <summary>
+				/// 包含这个item的lalrState
+				/// </summary>
+				LALRState* p_lalrState;
 
 				bool isOver() const;
 				//bool equal(const LALRItem* p_item) const;
@@ -90,6 +92,8 @@ namespace LingLan {
 				/// <returns>true mergeToSelf or false mergeToSelf</returns>
 				bool mergeToSelf(const LALRState* p_state) const;
 				//~LALRState();
+				void clear();
+				~LALRState();
 			};
 
 			class LALRAction {
@@ -108,7 +112,7 @@ namespace LingLan {
 			protected:
 				void initBlankSet();
 				void initFirstMap();
-				void initActionTable(vector<LALRState*>* p_allStates);
+				void initActionTable();
 				/// <summary>
 				/// [from, to)
 				/// </summary>
@@ -129,20 +133,20 @@ namespace LingLan {
 				/// 在原数据上操作
 				/// </summary>
 				/// <param name="p_itemVec"></param>
-				void eff_closure(vector<LALRItem*>* p_itemVec);
+				void eff_closure(LALRState* p_inState);
 				/// <summary>
 				/// 
 				/// </summary>
 				/// <param name="p_itemVec"></param>
-				void closure(vector<LALRItem*>* p_itemVec);
+				//void closure(vector<LALRItem*>* p_itemVec);
 				/// <summary>
 				/// 
 				/// </summary>
-				void eff_initAllStates(vector<LALRState*>* p_allStates);
+				void eff_initAllStates(vector<LALRState*>* p_allStates, set<LALRState*>* p_needUpdateVec);
 				/// <summary>
 				/// 
 				/// </summary>
-				void eff_spread(vector<LALRState*>* p_allStates);
+				void eff_spread(vector<LALRState*>* p_allStates, set<LALRState*>* p_needUpdateVec);
 			public:
 				set<SymbolNonTerminal*> blankSet;
 				map<SymbolNonTerminal*, set<SymbolTerminal*>*> firstMap;

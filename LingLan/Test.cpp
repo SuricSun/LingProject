@@ -11,14 +11,14 @@ void Test() {
 		SerializableCompilePack spack;
 		DeserializedCompilePack dpack;
 
-		//spack.initFromLanFile(u"C:\\Users\\suric\\Desktop\\languagerules.txt");
-		//spack.serialize((WCHAR*)L"c:\\work\\test dir\\brand new.bin");
+		spack.initFromLanFile(u"C:\\Users\\suric\\Desktop\\languagerules.txt");
+		spack.serialize((WCHAR*)L"c:\\work\\test dir\\brand new.bin");
 
 		dpack.deserialize((WCHAR*)L"c:\\work\\test dir\\brand new.bin");
 
 		vector<LingLan::Compile::Token*>* p_vec;
 		vector<LingLan::Compile::Grammatical::LALRAction*>* p_ac;
-		p_vec = dpack.lexer.lexicalAnalyze(u8"a=f()+b(a+func(f(2)+w+fuc(1+w(2+f()))))+1", 42 - 1);
+		p_vec = dpack.lexer.lexicalAnalyze(u8"class Test { {Test.a=100} (){a.func=b+func(d+2)} func(para){para=para+1} }", 75 - 1);
 		p_ac = dpack.parser.parse(p_vec);
 
 		//LanguageRulesFile rulesFile;

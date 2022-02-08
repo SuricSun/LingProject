@@ -23,17 +23,19 @@ bool LingLan::Compile::Grammatical::LALRItem::coreEqual(const LALRItem* p_item) 
 bool LingLan::Compile::Grammatical::LALRItem::mergeToSelf(const LALRItem* p_item) {
 
 	bool realMerge = false;
-	//融合spread father
-	u32 preSize = this->spreadFatherSet.size();
-	this->spreadFatherSet.insert(p_item->spreadFatherSet.cbegin(), p_item->spreadFatherSet.cend());
-	if (this->spreadFatherSet.size() > preSize) {
+	//融合spreadFather
+	u32 preSize = this->spreadFather.size();
+	this->spreadFather.insert(p_item->spreadFather.cbegin(), p_item->spreadFather.cend());
+	if (this->spreadFather.size() > preSize) {
 		realMerge = true;
 	}
 	//融合scndCpnt
 	preSize = this->sc_lookAhead.size();
 	this->sc_lookAhead.insert(p_item->sc_lookAhead.cbegin(), p_item->sc_lookAhead.cend());
 	if (this->sc_lookAhead.size() > preSize) {
-		realMerge = true;
+		realMerge = realMerge & true;
+	} else {
+		realMerge = false;
 	}
 	return realMerge;
 }
@@ -56,7 +58,7 @@ bool LingLan::Compile::Grammatical::LALRState::coreEqual(const LALRState* p_stat
 	}
 	u32 inKernelSize = p_state->kernelItemCnt;
 	vector<LALRItem*>::const_iterator thisB = this->items.cbegin();
-	vector<LALRItem*>::const_iterator thisE = this->items.cbegin() + this->kernelItemCnt;
+	vector<LALRItem*>::const_iterator thisE = this->items.cend();
 	vector<LALRItem*>::const_iterator thisIt;
 	//对于input的所有item
 	for (u32 i = 0; i < inKernelSize; i++) {
@@ -77,7 +79,7 @@ bool LingLan::Compile::Grammatical::LALRState::coreEqual(const LALRState* p_stat
 
 bool LingLan::Compile::Grammatical::LALRState::mergeToSelf(const LALRState* p_state) const {
 
-	u32 inKernelSize = p_state->kernelItemCnt;
+	u32 size = p_state->kernelItemCnt;
 	vector<LALRItem*>::const_iterator thisB = this->items.cbegin();
 	vector<LALRItem*>::const_iterator thisE = this->items.cbegin() + this->kernelItemCnt;
 	vector<LALRItem*>::const_iterator thisIt;
@@ -86,7 +88,7 @@ bool LingLan::Compile::Grammatical::LALRState::mergeToSelf(const LALRState* p_st
 	u32 preSize = 0;
 	bool realMerge = false;
 	//对于input的所有kernel item
-	for (u32 i = 0; i < inKernelSize; i++) {
+	for (u32 i = 0; i < size; i++) {
 		//要找到一个coreEqual的item
 		thisIt = thisB;
 		while (thisIt != thisE) {
@@ -100,9 +102,26 @@ bool LingLan::Compile::Grammatical::LALRState::mergeToSelf(const LALRState* p_st
 			continue;
 		}
 		//merge
-		deref(thisIt)->mergeToSelf(p_state->items.at(i));
+		if (deref(thisIt)->mergeToSelf(p_state->items.at(i))) {
+			//有一个是真merge就行
+			realMerge = true;
+		}
 	}
 	return realMerge;
+}
+
+void LingLan::Compile::Grammatical::LALRState::clear() {
+
+	u64 size = this->items.size();
+	for (u64 i = 0; i < size; i++) {
+		del(this->items.at(i));
+	}
+	this->items.clear();
+}
+
+LingLan::Compile::Grammatical::LALRState::~LALRState() {
+
+	this->clear();
 }
 
 LingLan::Compile::Grammatical::LALRParsingTable::LALRParsingTable() {
@@ -129,20 +148,10 @@ void LingLan::Compile::Grammatical::LALRParsingTable::init(AugGrammar* p_augGram
 
 	this->p_augGrammar = p_augGrammar;
 
-	___DEL___
-		vector<LALRState*>* p_allStates = new vector<LALRState*>();
-
 	//调用有顺序要求
 	this->initBlankSet();
 	this->initFirstMap();
-	this->initActionTable(p_allStates);
-
-	//TODO:del allStates
-	u32 size = p_allStates->size();
-	for (u32 i = 0; i < size; i++) {
-		del(p_allStates->at(i));
-	}
-	del(p_allStates);
+	this->initActionTable();
 }
 
 void LingLan::Compile::Grammatical::LALRParsingTable::clear() {
@@ -342,12 +351,26 @@ void LingLan::Compile::Grammatical::LALRParsingTable::initFirstMap() {
 	}
 }
 
-void LingLan::Compile::Grammatical::LALRParsingTable::initActionTable(vector<LALRState*>* p_allStates) {
+void LingLan::Compile::Grammatical::LALRParsingTable::initActionTable() {
 
 	//eff_initAllState
 	//eff_spread
-	this->eff_initAllStates(p_allStates);
-	this->eff_spread(p_allStates);
+
+	___DEL___
+		vector<LALRState*>* p_allStates = new vector<LALRState*>();
+	___DEL___
+		set<LALRState*>* p_needUpdateVec = new set<LALRState*>();
+
+	this->eff_initAllStates(p_allStates, p_needUpdateVec);
+	this->eff_spread(p_allStates, p_needUpdateVec);
+
+	//DELETE ALL STATES, p_needUpdateVec is a subSet of p_allStates so it needn't be deleted
+	u32 size = p_allStates->size();
+	for (u32 i = 0; i < size; i++) {
+		del(p_allStates->at(i));
+	}
+	del(p_allStates);
+	del(p_needUpdateVec);
 }
 
 bool LingLan::Compile::Grammatical::LALRParsingTable::first(vector<Symbol*>* p_inBody, u16 from, u16 to, set<SymbolTerminal*>* p_inSet) {
@@ -383,36 +406,26 @@ LALRState* LingLan::Compile::Grammatical::LALRParsingTable::eff_goto(vector<LALR
 		if (p_curItem->isOver()) {
 			continue;
 		}
-		p_curItem = p_itemVec->at(i);
 		if (p_curItem->p_prod->body.at(p_curItem->pos) == p_goToSymbol) {
 			p_newItem = new LALRItem();
 			p_newItem->p_prod = p_curItem->p_prod;
 			p_newItem->pos = p_curItem->pos + 1;
 			p_newItem->isKernelItem = true;
 			p_newItem->sc_lookAhead.insert(p_curItem->sc_lookAhead.cbegin(), p_curItem->sc_lookAhead.cend());
-			p_newItem->sc_spreadProbe.insert(p_curItem->sc_spreadProbe.cbegin(), p_curItem->sc_spreadProbe.cend());
+			p_newItem->spreadFather.insert(p_curItem);
+			p_newItem->p_lalrState = p_retState;
 			p_retState->items.emplace_back(p_newItem);
 		}
 	}
 
 	p_retState->kernelItemCnt = p_retState->items.size();
 
-	//把生成的kernel item的spreadProbe复制到spreadFather
-	//并把spreadProbe清除
-	for (u32 i = 0; i < p_retState->items.size(); i++) {
-		p_curItem = p_retState->items.at(i);
-		p_curItem->spreadFatherSet.insert(
-			p_curItem->sc_spreadProbe.cbegin(),
-			p_curItem->sc_spreadProbe.cend()
-		);
-		p_curItem->sc_spreadProbe.clear();
-	}
-
 	return p_retState;
 }
 
-void LingLan::Compile::Grammatical::LALRParsingTable::eff_closure(vector<LALRItem*>* p_itemVec) {
+void LingLan::Compile::Grammatical::LALRParsingTable::eff_closure(LALRState* p_inState) {
 
+	vector<LALRItem*>* p_itemVec = addr(p_inState->items);
 	u32 curItemIdx = 0;
 	LALRItem* p_curItem = nullptr;
 	bool deriveBlank = false;
@@ -424,14 +437,13 @@ void LingLan::Compile::Grammatical::LALRParsingTable::eff_closure(vector<LALRIte
 	Production* p_prodIt = nullptr;
 	set<SymbolTerminal*> firstSet;
 
-	vector<u32>* curVec = new vector<u32>();
-	vector<u32>* nxtVec = new vector<u32>();
-	vector<u32>* tmpVec = nullptr;
+	vector<LALRItem*>* curVec = new vector<LALRItem*>();
+	vector<LALRItem*>* nxtVec = new vector<LALRItem*>();
+	vector<LALRItem*>* tmpVec = nullptr;
 
 	//初始化,传入的就是kernel items
 	for (u32 i = 0; i < p_itemVec->size(); i++) {
-		p_itemVec->at(i)->sc_spreadProbe.emplace(p_itemVec->at(i));
-		curVec->emplace_back(i);
+		curVec->emplace_back(p_itemVec->at(i));
 	}
 
 	//Start Closure
@@ -440,12 +452,10 @@ void LingLan::Compile::Grammatical::LALRParsingTable::eff_closure(vector<LALRIte
 			//当前list里面什么都没有，退出循环
 			break;
 		}
-		//clear nxtVec
+		//clear nxtNeedUpdateState
 		nxtVec->clear();
 		for (u32 i = 0; i < curVec->size(); i++) {
-
-			curItemIdx = curVec->at(i);
-			p_curItem = p_itemVec->at(curItemIdx);
+			p_curItem = curVec->at(i);
 			//如果没有isOver才能继续
 			if (p_curItem->isOver()) {
 				continue;
@@ -465,22 +475,13 @@ void LingLan::Compile::Grammatical::LALRParsingTable::eff_closure(vector<LALRIte
 				p_newItem->p_prod = p_prodIt;
 				p_newItem->pos = 0;
 				p_newItem->sc_lookAhead.insert(firstSet.cbegin(), firstSet.cend());
+				p_newItem->p_lalrState = p_inState;
 				if (deriveBlank) {
 					//意味着当前被closure的Item会spread
-					//if (p_curItem->isKernelItem) {
-					//	//kernel item才能当father
-					//	p_newItem->sc_spreadProbe.emplace(p_curItem);
-					//} else {
-					//	p_newItem->sc_spreadProbe.insert(p_curItem->sc_spreadProbe.cbegin(), p_curItem->sc_spreadProbe.cend());
-					//}
 					p_newItem->sc_lookAhead.insert(
 						p_curItem->sc_lookAhead.cbegin(),
 						p_curItem->sc_lookAhead.cend()
 					);
-					p_newItem->sc_spreadProbe.insert(
-						p_curItem->sc_spreadProbe.cbegin(),
-						p_curItem->sc_spreadProbe.cend()
-					);
 				}
 				//检测是否存在
 				u32 foundIdx = 0;
@@ -493,111 +494,18 @@ void LingLan::Compile::Grammatical::LALRParsingTable::eff_closure(vector<LALRIte
 					//didnt found
 					//add one
 					p_itemVec->emplace_back(p_newItem);
-					//add to nxtVec
-					nxtVec->emplace_back(foundIdx);
+					//add to nxtNeedUpdateState
+					if (find(nxtVec->cbegin(), nxtVec->cend(), p_newItem) == nxtVec->cend()) {
+						nxtVec->emplace_back(p_newItem);
+					}
 				} else {
 					//found，mergeToSelf
 					//kernel item的father只能在其他的state中
 					//如果是真merge
-					if (p_itemVec->at(foundIdx)->mergeToSelf(p_newItem)) {
-						//如果是在前面
-						if (foundIdx < curItemIdx) {
-							//add to nxtList
-							if (find(nxtVec->cbegin(), nxtVec->cend(), foundIdx) == nxtVec->cend()) {
-								nxtVec->emplace_back();
-							}
-						}
-					}
-					del(p_newItem);
-				}
-			}
-		}
-		tmpVec = curVec;
-		curVec = nxtVec;
-		nxtVec = tmpVec;
-	}
-}
-
-void LingLan::Compile::Grammatical::LALRParsingTable::closure(vector<LALRItem*>* p_itemVec) {
-
-	u32 curItemIdx = 0;
-	LALRItem* p_curItem = nullptr;
-	bool deriveBlank = false;
-
-	map<SymbolNonTerminal*, vector<Production*>*>* p_sameHeadProdMap
-		= addr(this->p_augGrammar->sameHeadProdMap);
-
-	vector<Production*>* p_allProdWithSameHead = nullptr;
-	Production* p_prodIt = nullptr;
-	set<SymbolTerminal*> firstSet;
-
-	vector<u32>* curVec = new vector<u32>();
-	vector<u32>* nxtVec = new vector<u32>();
-	vector<u32>* tmpVec = nullptr;
-
-	//初始化
-	for (u32 i = 0; i < p_itemVec->size(); i++) {
-		curVec->emplace_back(i);
-	}
-
-	//Start Closure
-	while (true) {
-		if (curVec->size() <= 0) {
-			//当前list里面什么都没有，退出循环
-			break;
-		}
-		//clear nxtVec
-		nxtVec->clear();
-		for (u32 i = 0; i < curVec->size(); i++) {
-
-			curItemIdx = curVec->at(i);
-			p_curItem = p_itemVec->at(curItemIdx);
-			//如果没有isOver才能继续
-			if (p_curItem->isOver()) {
-				continue;
-			}
-			//如果是Non-Terminal才能继续
-			if (p_curItem->p_prod->body.at(p_curItem->pos)->type == Symbol::Type::Terminal) {
-				continue;
-			}
-			//查找对应的所有prod并计算相应的scndCpnt，加入之前看看是否item已经存在，存在的话就merge item
-			//对于当前item生成的新的prod，转化为item，如果已存在就融合否则加入
-			firstSet.clear();
-			deriveBlank = this->first(addr(p_curItem->p_prod->body), p_curItem->pos + 1, p_curItem->p_prod->body.size(), &firstSet);
-			p_allProdWithSameHead = deref(p_sameHeadProdMap->find((SymbolNonTerminal*)(p_curItem->p_prod->body.at(p_curItem->pos)))).second;
-			for (u32 j = 0; j < p_allProdWithSameHead->size(); j++) {
-				p_prodIt = p_allProdWithSameHead->at(j);
-				LALRItem* p_newItem = new LALRItem();
-				p_newItem->p_prod = p_prodIt;
-				p_newItem->pos = 0;
-				p_newItem->sc_lookAhead.insert(firstSet.cbegin(), firstSet.cend());
-				if (deriveBlank) {
-					//把curItem的scndCpnt加入
-					p_newItem->sc_lookAhead.insert(p_curItem->sc_lookAhead.cbegin(), p_curItem->sc_lookAhead.cend());
-				}
-				//检测是否存在
-				u32 foundIdx = 0;
-				for (; foundIdx < p_itemVec->size(); foundIdx++) {
-					if (p_newItem->coreEqual(p_itemVec->at(foundIdx))) {
-						break;
-					}
-				}
-				if (foundIdx >= p_itemVec->size()) {
-					//didnt found
-					//add one
-					p_itemVec->emplace_back(p_newItem);
-					//add to nxtVec
-					nxtVec->emplace_back(foundIdx);
-				} else {
-					//found，mergeToSelf
-					//如果是真merge
 					if (p_itemVec->at(foundIdx)->mergeToSelfOnlyLookAhead(p_newItem)) {
-						//如果是在前面
-						if (foundIdx < curItemIdx) {
-							//add to nxtList
-							if (find(nxtVec->cbegin(), nxtVec->cend(), foundIdx) == nxtVec->cend()) {
-								nxtVec->emplace_back();
-							}
+						//add to nxtList
+						if (find(nxtVec->cbegin(), nxtVec->cend(), p_itemVec->at(foundIdx)) == nxtVec->cend()) {
+							nxtVec->emplace_back(p_itemVec->at(foundIdx));
 						}
 					}
 					del(p_newItem);
@@ -610,7 +518,101 @@ void LingLan::Compile::Grammatical::LALRParsingTable::closure(vector<LALRItem*>*
 	}
 }
 
-void LingLan::Compile::Grammatical::LALRParsingTable::eff_initAllStates(vector<LALRState*>* p_allStates) {
+//void LingLan::Compile::Grammatical::LALRParsingTable::closure(vector<LALRItem*>* p_itemVec) {
+//
+//	u32 curItemIdx = 0;
+//	LALRItem* p_curItem = nullptr;
+//	bool deriveBlank = false;
+//
+//	map<SymbolNonTerminal*, vector<Production*>*>* p_sameHeadProdMap
+//		= addr(this->p_augGrammar->sameHeadProdMap);
+//
+//	vector<Production*>* p_allProdWithSameHead = nullptr;
+//	Production* p_prodIt = nullptr;
+//	set<SymbolTerminal*> firstSet;
+//
+//	vector<u32>* curNeedUpdateState = new vector<u32>();
+//	vector<u32>* nxtNeedUpdateState = new vector<u32>();
+//	vector<u32>* tmpNeedUpdateState = nullptr;
+//
+//	//初始化
+//	for (u32 i = 0; i < p_itemVec->size(); i++) {
+//		curNeedUpdateState->emplace_back(i);
+//	}
+//
+//	//Start Closure
+//	while (true) {
+//		if (curNeedUpdateState->size() <= 0) {
+//			//当前list里面什么都没有，退出循环
+//			break;
+//		}
+//		//clear nxtNeedUpdateState
+//		nxtNeedUpdateState->clear();
+//		for (u32 i = 0; i < curNeedUpdateState->size(); i++) {
+//
+//			curItemIdx = curNeedUpdateState->at(i);
+//			p_curItem = p_itemVec->at(curItemIdx);
+//			//如果没有isOver才能继续
+//			if (p_curItem->isOver()) {
+//				continue;
+//			}
+//			//如果是Non-Terminal才能继续
+//			if (p_curItem->p_prod->body.at(p_curItem->pos)->type == Symbol::Type::Terminal) {
+//				continue;
+//			}
+//			//查找对应的所有prod并计算相应的scndCpnt，加入之前看看是否item已经存在，存在的话就merge item
+//			//对于当前item生成的新的prod，转化为item，如果已存在就融合否则加入
+//			firstSet.clear();
+//			deriveBlank = this->first(addr(p_curItem->p_prod->body), p_curItem->pos + 1, p_curItem->p_prod->body.size(), &firstSet);
+//			p_allProdWithSameHead = deref(p_sameHeadProdMap->find((SymbolNonTerminal*)(p_curItem->p_prod->body.at(p_curItem->pos)))).second;
+//			for (u32 j = 0; j < p_allProdWithSameHead->size(); j++) {
+//				p_prodIt = p_allProdWithSameHead->at(j);
+//				LALRItem* p_newItem = new LALRItem();
+//				p_newItem->p_prod = p_prodIt;
+//				p_newItem->pos = 0;
+//				p_newItem->sc_lookAhead.insert(firstSet.cbegin(), firstSet.cend());
+//				if (deriveBlank) {
+//					//把curItem的scndCpnt加入
+//					p_newItem->sc_lookAhead.insert(p_curItem->sc_lookAhead.cbegin(), p_curItem->sc_lookAhead.cend());
+//				}
+//				//检测是否存在
+//				u32 foundIdx = 0;
+//				for (; foundIdx < p_itemVec->size(); foundIdx++) {
+//					if (p_newItem->coreEqual(p_itemVec->at(foundIdx))) {
+//						break;
+//					}
+//				}
+//				if (foundIdx >= p_itemVec->size()) {
+//					//didnt found
+//					//add one
+//					p_itemVec->emplace_back(p_newItem);
+//					//add to nxtNeedUpdateState
+//					if (find(nxtNeedUpdateState->cbegin(), nxtNeedUpdateState->cend(), foundIdx) == nxtNeedUpdateState->cend()) {
+//						nxtNeedUpdateState->emplace_back(foundIdx);
+//					}
+//				} else {
+//					//found，mergeToSelf
+//					//如果是真merge
+//					if (p_itemVec->at(foundIdx)->mergeToSelfOnlyLookAhead(p_newItem)) {
+//						//如果是在前面
+//						if (foundIdx < curItemIdx) {
+//							//add to nxtList
+//							if (find(nxtNeedUpdateState->cbegin(), nxtNeedUpdateState->cend(), foundIdx) == nxtNeedUpdateState->cend()) {
+//								nxtNeedUpdateState->emplace_back(foundIdx);
+//							}
+//						}
+//					}
+//					del(p_newItem);
+//				}
+//			}
+//		}
+//		tmpNeedUpdateState = curNeedUpdateState;
+//		curNeedUpdateState = nxtNeedUpdateState;
+//		nxtNeedUpdateState = tmpNeedUpdateState;
+//	}
+//}
+
+void LingLan::Compile::Grammatical::LALRParsingTable::eff_initAllStates(vector<LALRState*>* p_allStates, set<LALRState*>* p_needUpdateVec) {
 
 	vector<SymbolNonTerminal*>* p_allNonTerminals = addr(this->p_augGrammar->allNonTerminals);
 	map<SymbolNonTerminal*, vector<Production*>*>* p_sameHeadProdMap = addr(this->p_augGrammar->sameHeadProdMap);
@@ -633,7 +635,7 @@ void LingLan::Compile::Grammatical::LALRParsingTable::eff_initAllStates(vector<L
 	p_initState->items.emplace_back(p_initItem);
 	p_initState->kernelItemCnt = p_initState->items.size();
 	p_allStates->emplace_back(p_initState);
-	this->eff_closure(addr(p_initState->items));
+	this->eff_closure(p_initState);
 	p_actionMapTable->emplace_back();
 
 	//辅助变量
@@ -678,16 +680,17 @@ void LingLan::Compile::Grammatical::LALRParsingTable::eff_initAllStates(vector<L
 			if (foundIdx >= p_allStates->size()) {
 				//nothing found
 				//then add
-				if (foundIdx == 11) {
-					int a = 0;
-				}
-				this->eff_closure(addr(p_newState->items));
+				//closure
+				this->eff_closure(p_newState);
 				p_allStates->emplace_back(p_newState);
 				p_actionMapTable->emplace_back();
 			} else {
 				//mergeToSelf if exists
 				p_allStates->at(foundIdx)->mergeToSelf(p_newState);
+
 				//因为融入了一次，所以要重新link一次
+				p_needUpdateVec->emplace(p_allStates->at(foundIdx));
+
 				del(p_newState);
 			}
 			//添加Shift Map
@@ -699,46 +702,69 @@ void LingLan::Compile::Grammatical::LALRParsingTable::eff_initAllStates(vector<L
 	}
 }
 
-void LingLan::Compile::Grammatical::LALRParsingTable::eff_spread(vector<LALRState*>* p_allStates) {
+void LingLan::Compile::Grammatical::LALRParsingTable::eff_spread(vector<LALRState*>* p_allStates, set<LALRState*>* p_needUpdateVec) {
 
 	u32 stateCnt = p_allStates->size();
 	u32 kernerItemCnt = 0;
 	LALRState* p_curState = nullptr;
 	LALRItem* p_curItem = nullptr;
+	set<LALRState*>* curNeedUpdateState = p_needUpdateVec;
+	set<LALRState*>* nxtNeedUpdateState = new set<LALRState*>();
+	set<LALRState*>* tmpNeedUpdateState = nullptr;
+	set<LALRState*>::const_iterator needUpdateStateIt;
+	set<LALRState*>::const_iterator needUpdateStateE;
 	set<LALRItem*>::const_iterator fatherBegin;
 	set<LALRItem*>::const_iterator fatherEnd;
 
-	bool everHasOne = true;
 	while (true) {
-		if (everHasOne == false) {
+
+		if (curNeedUpdateState->size() <= 0) {
+			//当前list里面什么都没有，退出循环
 			break;
 		}
-		everHasOne = false;
+		//clear nxtNeedUpdateState
+		nxtNeedUpdateState->clear();
+		
+		//循环所有curUpdateState并且closure
+		needUpdateStateIt = curNeedUpdateState->cbegin();
+		needUpdateStateE = curNeedUpdateState->cend();
+		while (needUpdateStateIt != needUpdateStateE) {
+			this->eff_closure(deref(needUpdateStateIt));
+			needUpdateStateIt++;
+		}
 
 		//循环所有State
 		for (u32 s = 0; s < stateCnt; s++) {
 			p_curState = p_allStates->at(s);
-			kernerItemCnt = p_curState->kernelItemCnt;
-			//循环所有kernel item
+			kernerItemCnt = p_curState->items.size();
+			//循环所有state的所有item
 			for (u32 i = 0; i < kernerItemCnt; i++) {
 				p_curItem = p_curState->items.at(i);
-				fatherBegin = p_curItem->spreadFatherSet.cbegin();
-				fatherEnd = p_curItem->spreadFatherSet.cend();
-				//对于此item，从所有的child中spread sc_lookAhead
+				//循环这个item的所有fatherItem，如果在当前needUpdateState里面就merge
+				//如果这个state里面的item有一个真merge，就加入下一个needUpdateState
+				fatherBegin = p_curItem->spreadFather.cbegin();
+				fatherEnd = p_curItem->spreadFather.cend();
+				//对于此item，从所有的father中更新自己
 				while (fatherBegin != fatherEnd) {
+					if (curNeedUpdateState->find(deref(fatherBegin)->p_lalrState) == curNeedUpdateState->cend()) {
+						fatherBegin++;
+						continue;
+					}
 					if (p_curItem->mergeToSelfOnlyLookAhead(deref(fatherBegin))) {
-						everHasOne = true;
+						//有一个真merge，整个state要加入下一个nxtVec
+						nxtNeedUpdateState->emplace(p_curItem->p_lalrState);
 					}
 					fatherBegin++;
 				}
 			}
 		}
+
+		tmpNeedUpdateState = curNeedUpdateState;
+		curNeedUpdateState = nxtNeedUpdateState;
+		nxtNeedUpdateState = tmpNeedUpdateState;
 	}
 
-	//所有state全部closure
-	for (u32 s = 0; s < stateCnt; s++) {
-		this->closure(addr(p_allStates->at(s)->items));
-	}
+	// * 更新actionMapTable
 
 	vector<map<Symbol*, LALRAction*>>* p_actionMapTable = addr(this->actionMapTable);
 
